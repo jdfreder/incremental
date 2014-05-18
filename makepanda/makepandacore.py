@@ -73,6 +73,7 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2013","2013"),
                    ("MAYA20135","2013.5"),
                    ("MAYA2014","2014"),
+                   ("MAYA2015","2015"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -2333,8 +2334,12 @@ def CopyFile(dstfile, srcfile):
         if (fnl < 0): fn = srcfile
         else: fn = srcfile[fnl+1:]
         dstfile = dstdir + fn
-    if (NeedsBuild([dstfile], [srcfile])):
-        WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
+    if NeedsBuild([dstfile], [srcfile]):
+        if os.path.islink(srcfile):
+            # Preserve symlinks
+            os.symlink(os.readlink(srcfile), dstfile)
+        else:
+            WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
         JustBuilt([dstfile], [srcfile])
 
 def CopyAllFiles(dstdir, srcdir, suffix=""):
